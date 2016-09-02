@@ -1,0 +1,4 @@
+动态数据源:
+1.继承AbstractRoutingDataSource
+2.在配置文件中配置多个数据源
+3.配置AOP动态切换数据源

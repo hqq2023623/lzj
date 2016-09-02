@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ehcache>
+	<!--如果缓存中的对象存储超过指定的缓存数量的对象存储的磁盘地址 -->
+	<diskStore path="E:/ProjectEhcache/test" />
+
+	<!-- 默认cache：如果没有对应的特定区域的缓存@Cache(region)，就使用默认缓存 -->
+	<defaultCache maxElementsInMemory="10000" eternal="false"
+		timeToIdleSeconds="1800" timeToLiveSeconds="1800" overflowToDisk="false" />
+
+	<!-- 指定区域cache：通过name指定，name对应到Hibernate中的区域名即可 -->
+	<cache name="com.zj.model" eternal="false" maxElementsInMemory="50000"
+		timeToIdleSeconds="1200" timeToLiveSeconds="1200" overflowToDisk="true">
+	</cache>
+
+	<cache name="org.hibernate.cache.internal.StandardQueryCache"
+		maxElementsInMemory="10000" eternal="false" timeToLiveSeconds="1800"
+		overflowToDisk="true" />
+
+	<cache name="org.hibernate.cache.spi.UpdateTimestampsCache"
+		maxElementsInMemory="10000" eternal="true" overflowToDisk="true" />
+
+</ehcache>  

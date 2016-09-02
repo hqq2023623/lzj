@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 讲解Dom的时候使用的xml文件 -->
+<class>
+	<student id="zj001" sex="男">
+		<username sex="女">lzj</username>
+		<age>29</age>
+		<intro>adc</intro>
+	</student>
+	<student sex="女">
+		<username>faker</username>
+		<age>38</age>
+		<intro>mid</intro>
+	</student>
+
+	<student sex="男">
+		<username>kakao</username>
+		<age>27</age>
+		<intro>jungle</intro>
+	</student>
+</class>

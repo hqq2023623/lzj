@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context 
+       http://www.springframework.org/schema/context/spring-context.xsd
+       http://www.springframework.org/schema/tx 
+       http://www.springframework.org/schema/tx/spring-tx.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop.xsd
+       ">
+
+    <context:component-scan base-package="zj.base"/>
+    <context:property-placeholder location="classpath:test_base.properties"/>
+
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"
+          init-method="init" destroy-method="close">
+        <property name="url" value="${url}"/>
+        <!--为什么不能读取${username}-->
+        <property name="username" value="root"/>
+        <property name="password" value="${password}"/>
+        <property name="driverClassName" value="${DriverClassName}"/>
+        <property name="filters" value="${filters}"/>
+        <property name="maxActive" value="${maxActive}"/>
+        <property name="initialSize" value="${initialSize}"/>
+        <property name="maxWait" value="${maxWait}"/>
+        <property name="minIdle" value="${minIdle}"/>
+        <property name="timeBetweenEvictionRunsMillis" value="${timeBetweenEvictionRunsMillis}"/>
+        <property name="minEvictableIdleTimeMillis" value="${minEvictableIdleTimeMillis}"/>
+        <property name="validationQuery" value="${validationQuery}"/>
+        <property name="testWhileIdle" value="${testWhileIdle}"/>
+        <property name="testOnBorrow" value="${testOnBorrow}"/>
+        <property name="testOnReturn" value="${testOnReturn}"/>
+        <property name="maxOpenPreparedStatements" value="${maxOpenPreparedStatements}"/>
+        <property name="removeAbandoned" value="${removeAbandoned}"/>
+        <!-- 打开removeAbandoned功能 -->
+        <property name="removeAbandonedTimeout" value="${removeAbandonedTimeout}"/>
+        <!-- 1800秒，也就是30分钟 -->
+        <property name="logAbandoned" value="${logAbandoned}"/>
+        <!-- 关闭abanded连接时输出错误日志 -->
+    </bean>
+
+    <bean id="sessionFactory"
+          class="org.springframework.orm.hibernate4.LocalSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.service.jdbc.connections.spi.provider_class">
+                    com.alibaba.druid.support.hibernate.DruidConnectionProvider
+                </prop>
+                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
+                <prop key="hibernate.show_sql">${hibernate.show_sql}</prop>
+                <prop key="hibernate.format_sql">${hibernate.format_sql}</prop>
+                <prop key="hibernate.hbm2ddl.auto">${hibernate.hbm2ddl.auto}</prop>
+                <!-- 开启二级缓存 -->
+                <prop key="hibernate.cache.use_second_level_cache">true</prop>
+                <!-- 启动"查询缓存"如果想缓存使用findall()、list()、Iterator()、createCriteria()、createQuery()等方法获得的数据结果集,必须配置此项 -->
+                <prop key="hibernate.cache.use_query_cache">true</prop>
+                <!--&lt;!&ndash; 设置二级缓存插件EHCache的Provider类 &ndash;&gt;-->
+                <!--<prop key="hibernate.cache.provider_class">org.hibernate.cache.EhCacheProvider</prop>-->
+                <!--&lt;!&ndash; 高速缓存提供程序 &ndash;&gt;-->
+                <!--<prop key="hibernate.cache.region.factory_class">org.hibernate.cache.ehcache.EhCacheRegionFactory-->
+                <!--</prop>-->
+                <prop key="hibernate.cache.region.factory_class">
+                    org.hibernate.cache.ehcache.EhCacheRegionFactory
+                </prop>
+                <!-- 指定缓存配置文件位置 -->
+                <prop key="hibernate.cache.provider_configuration_file_resource_path">classpath:ehcache.xml</prop>
+            </props>
+        </property>
+        <property name="packagesToScan">
+            <list>
+                <value>zj.base.model</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 配置Spring的事务处理 -->
+    <!-- 创建事务管理器 -->
+    <bean id="txManager"
+          class="org.springframework.orm.hibernate4.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"/>
+    </bean>
+
+    <!-- 配置AOP，Spring是通过AOP来进行事务管理的 -->
+    <aop:config>
+        <aop:pointcut id="allMethods" expression="execution(* zj.base.dao.*.*(..))"/>
+        <!-- 通过advisor来确定具体要加入事务控制的方法 -->
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="allMethods"/>
+    </aop:config>
+    <!-- 配置哪些方法要加入事务控制 -->
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <!-- 让所有的方法都加入事务管理，为了提高效率，可以把一些查询之类的方法设置为只读的事务 -->
+            <tx:method name="*" propagation="REQUIRED" read-only="true"/>
+            <!-- 以下方法都是可能涉及修改的方法，就无法设置为只读 -->
+            <tx:method name="test*" propagation="REQUIRED"/>
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="del*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="get*" propagation="REQUIRED"/>
+            <tx:method name="do*" propagation="REQUIRED"/>
+            <tx:method name="load*" propagation="REQUIRED"/>
+            <tx:method name="find*" propagation="REQUIRED"/>
+            <tx:method name="query*" propagation="REQUIRED"/>
+        </tx:attributes>
+    </tx:advice>
+
+</beans>
